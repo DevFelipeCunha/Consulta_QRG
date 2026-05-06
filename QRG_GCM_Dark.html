@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Cobertura QRG - UI/UX</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ==========================================================================
+           1. VARIÁVEIS CSS (DESIGN SYSTEM)
+           ========================================================================== */
+        :root {
+            /* Cores - Modo Claro */
+            --bg-body: #f1f5f9;
+            --bg-surface: #ffffff;
+            --bg-surface-alt: #f8fafc;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            
+            /* Paleta Principal */
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --primary-active: #1e3a8a;
+            --success: #16a34a;
+            --success-bg: rgba(22, 163, 74, 0.1);
+            --info: #0284c7;
+            --info-bg: rgba(2, 132, 199, 0.1);
+            --danger: #dc2626;
+            --danger-bg: rgba(220, 38, 38, 0.1);
+            --warning: #eab308;
+            
+            /* Top Bar */
+            --topbar-bg: #1e293b;
+            --topbar-text: #f8fafc;
+            --topbar-border: #334155;
+
+            /* Tabela */
+            --table-header-bg: #f8fafc;
+            --table-row-zebra: #fcfcfc;
+            --table-row-hover: #f1f5f9;
+            --table-group-header: #e2e8f0;
+
+            /* Outros */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Cores - Modo Escuro */
+        [data-theme="dark"] {
+            --bg-body: #0f172a;       
+            --bg-surface: #1e293b;    
+            --bg-surface-alt: #0f172a;
+            --text-primary: #f8fafc;  
+            --text-secondary: #94a3b8;
+            --border-color: #334155;  
+            
+            --primary: #3b82f6;       
+            --primary-hover: #60a5fa;
+            --success: #22c55e;
+            --success-bg: rgba(34, 197, 94, 0.15);
+            --info: #38bdf8;
+            --info-bg: rgba(56, 189, 248, 0.15);
+            --danger: #ef4444;
+            --danger-bg: rgba(239, 68, 68, 0.15);
+            --warning: #facc15;
+            
+            --topbar-bg: #020617;
+            --topbar-text: #f8fafc;
+            --topbar-border: #1e293b;
+
+            --table-header-bg: #0f172a;
+            --table-row-zebra: #1e293b; 
+            --table-row-hover: #334155;
+            --table-group-header: #334155;
+            
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.2);
+        }
+
+        /* ==========================================================================
+           2. RESET & BASE
+           ========================================================================== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            transition: background-color var(--transition), color var(--transition);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ==========================================================================
+           3. BARRA SUPERIOR (TOP BAR)
+           ========================================================================== */
+        .master-site-bar {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            background: var(--topbar-bg);
+            color: var(--topbar-text);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            padding: 10px 20px;
+            box-shadow: var(--shadow-md);
+            z-index: 2000;
+            font-size: 0.75rem;
+            transition: background-color var(--transition);
+            gap: 15px;
+        }
+
+        .master-site-bar .region-item {
+            text-align: center;
+            border-right: 1px solid var(--topbar-border);
+            padding: 0 15px;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .master-site-bar .region-item:last-of-type { border-right: none; }
+        
+        .master-site-bar strong { display: block; font-size: 0.9rem; margin: 2px 0; font-weight: 700; letter-spacing: 0.5px;}
+        .master-site-bar span { font-size: 0.65rem; opacity: 0.7; }
+
+        .ch-16 { color: #f87171; } /* Red */
+        .ch-09 { color: #d946ef; } /* Fuchsia */
+        .ch-05 { color: #4ade80; } /* Green */
+        .ch-04 { color: #38bdf8; } /* Light Blue */
+        .ch-17 { color: #facc15; } /* Yellow */
+
+        /* ==========================================================================
+           4. DARK MODE SWITCH
+           ========================================================================== */
+        .theme-switch-wrapper {
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+            padding-left: 15px;
+            border-left: 1px solid var(--topbar-border);
+        }
+
+        .theme-switch { display: inline-block; height: 24px; position: relative; width: 48px; }
+        .theme-switch input { display: none; }
+
+        .slider {
+            background-color: #475569; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: var(--transition); border-radius: 24px;
+        }
+        .slider:before {
+            background-color: #fff; bottom: 3px; content: ""; height: 18px; left: 3px; position: absolute; transition: var(--transition); width: 18px; border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(24px); }
+        .theme-icon { font-size: 14px; margin: 0 8px; color: var(--topbar-text); }
+
+        /* ==========================================================================
+           5. LAYOUT PRINCIPAL (GRID)
+           ========================================================================== */
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            width: 100%;
+            flex: 1;
+        }
+
+        .container {
+            background: var(--bg-surface);
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            transition: all var(--transition);
+            margin-bottom: 2rem;
+        }
+
+        .container h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary); }
+        .container h4 { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem; font-weight: 500; }
+
+        /* ==========================================================================
+           6. CAIXAS DE BUSCA
+           ========================================================================== */
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .search-input-wrapper { flex: 1; position: relative; }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            width: 18px;
+            height: 18px;
+            transition: color var(--transition);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px 12px 40px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background-color: var(--bg-surface-alt);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            outline: none;
+            transition: all var(--transition);
+        }
+
+        .search-input::placeholder { color: var(--text-secondary); }
+        .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+            background-color: var(--bg-surface);
+        }
+        .search-input:focus + .search-icon { color: var(--primary); }
+
+        /* ==========================================================================
+           7. BOTÕES
+           ========================================================================== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary { background-color: var(--primary); color: #ffffff; }
+        .btn-primary:hover { background-color: var(--primary-hover); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .btn-primary:active { background-color: var(--primary-active); transform: translateY(0); }
+
+        .btn-success { background-color: var(--success); color: #ffffff; }
+        .btn-success:hover { background-color: #15803d; transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        
+        /* Links Personalizados */
+        .links-container { display: flex; flex-direction: column; gap: 10px; margin-top: 1rem; }
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            text-decoration: none;
+            text-align: center;
+            padding: 10px 20px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all var(--transition);
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-outline:hover { background-color: var(--primary); color: #ffffff; }
+
+        /* ==========================================================================
+           8. RESULTADOS E ALERTAS (UX)
+           ========================================================================== */
+        .result {
+            padding: 1.25rem;
+            border-radius: var(--radius-md);
+            display: none;
+            margin-top: 1rem;
+            border-left: 4px solid;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-success { border-left-color: var(--success); background-color: var(--success-bg); }
+        .result-success h3 { color: var(--success); margin-bottom: 10px; font-size: 1.1rem; }
+        
+        .result-info { border-left-color: var(--info); background-color: var(--info-bg); }
+        .result-info h3 { color: var(--info); margin-bottom: 10px; font-size: 1.1rem; }
+
+        .result-error { border-left-color: var(--danger); background-color: var(--danger-bg); }
+        .result-error h3 { color: var(--danger); margin-bottom: 5px; font-size: 1.1rem; }
+
+        .bairros-list { column-count: 2; column-gap: 20px; font-size: 0.9rem; color: var(--text-primary); margin-top: 10px; }
+        .bairros-list li { margin-bottom: 4px; list-style-type: none; }
+        .bairros-list li::before { content: "•"; color: var(--text-secondary); display: inline-block; width: 1em; margin-left: -1em;}
+
+        .qrg-badge { 
+            display: inline-block; 
+            background: var(--primary); 
+            color: white; 
+            padding: 2px 8px; 
+            border-radius: 12px; 
+            font-size: 0.8rem; 
+            font-weight: 600; 
+            margin-right: 8px; 
+        }
+        .note { color: var(--warning); font-weight: 600; font-size: 0.85rem; margin-top: 12px; }
+
+        /* ==========================================================================
+           9. TABELA LATERAL (SIDEBAR)
+           ========================================================================== */
+        .sidebar { height: fit-content; position: sticky; top: 100px; }
+        
+        .table-container {
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            background-color: var(--bg-surface);
+        }
+
+        .sidebar h3 {
+            padding: 15px;
+            font-size: 1rem;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--bg-surface-alt);
+            text-align: center;
+        }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th, td { text-align: left; padding: 10px 15px; border-bottom: 1px solid var(--border-color); }
+        
+        .data-table th { background-color: var(--table-header-bg); color: var(--text-secondary); font-weight: 600; text-transform: uppercase; font-size: 0.75rem;}
+        
+        .region-header { background-color: var(--table-group-header); color: var(--text-primary); font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;}
+        
+        .data-table tbody tr:hover { background-color: var(--table-row-hover); }
+        .data-table tr:last-child td { border-bottom: none; }
+
+        /* ==========================================================================
+           10. RESPONSIVIDADE
+           ========================================================================== */
+        @media (max-width: 900px) {
+            .dashboard-layout { grid-template-columns: 1fr; }
+            .sidebar { position: static; order: 2; }
+            .main-content { order: 1; }
+            .bairros-list { column-count: 1; }
+        }
+
+        @media (max-width: 600px) {
+            .search-box { flex-direction: column; }
+            .btn { width: 100%; }
+            .master-site-bar { flex-direction: column; padding: 10px; gap: 10px;}
+            .master-site-bar .region-item { border-right: none; border-bottom: 1px solid var(--topbar-border); padding: 5px 0; width: 100%;}
+            .theme-switch-wrapper { border-left: none; margin-left: 0; padding-left: 0; padding-top: 10px; border-top: 1px solid var(--topbar-border); width: 100%; justify-content: center;}
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Barra de Status Superior -->
+    <header class="master-site-bar">
+        <div class="region-item">CENTRO<br><strong class="ch-16">CANAL 16</strong><span>(NOVA LUZ/COPOM)</span></div>
+        <div class="region-item">SUL<br><strong class="ch-09">CANAL 01</strong><span>(INTERLAGOS)</span></div>
+        <div class="region-item">NORTE OESTE<br><strong class="ch-05">CANAL 05</strong><span>(PICO DO JARAGUÁ)</span></div>
+        <div class="region-item">LESTE<br><strong class="ch-04">CANAL 04</strong><span>(ARTHUR ALVIM)</span></div>
+        <div class="region-item">BKP<br><strong class="ch-17">CANAL 17</strong><span>(NOVA LUZ/COPOM)</span></div>
+        
+        <!-- Toggle Dark Mode Embutido -->
+        <div class="theme-switch-wrapper">
+            <span class="theme-icon">☀️</span>
+            <label class="theme-switch" for="checkbox" aria-label="Alternar modo escuro">
+                <input type="checkbox" id="checkbox" />
+                <div class="slider"></div>
+            </label>
+            <span class="theme-icon">🌙</span>
+        </div>
+    </header>
+
+    <main class="dashboard-layout">
+        <!-- Tabela Lateral -->
+        <aside class="sidebar container" style="padding: 0;">
+            <h3>Relação por Região</h3>
+            <div class="table-container" style="border: none; border-radius: 0 0 var(--radius-lg) var(--radius-lg);">
+                <table class="data-table">
+                    <thead><tr><th>QRG</th><th>Site / Repetidora</th></tr></thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </aside>
+
+        <!-- Conteúdo Principal de Buscas -->
+        <section class="main-content">
+            
+            <!-- Bloco 1: Busca por QRG -->
+            <div class="container">
+                <h2>Consulta de QRG</h2>
+                <h4>Pesquisar pelo número da canaleta:</h4>
+                <div class="search-box">
+                    <div class="search-input-wrapper">
+                        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="number" id="qrgInput" class="search-input" placeholder="Ex: 05" autofocus>
+                    </div>
+                    <button class="btn btn-primary" onclick="buscarPorQRG()">Consultar</button>
+                </div>
+                
+                <!-- Resultados QRG -->
+                <div id="resultBoxQRG" class="result">
+                    <h3 id="resSite"></h3>
+                    <div id="resBairrosWrapper" style="display: none;">
+                        <p style="font-weight: 600; font-size: 0.9rem; color: var(--text-primary); margin-top: 10px;">Áreas de Cobertura:</p>
+                        <ul id="resBairros" class="bairros-list"></ul>
+                    </div>
+                    <div id="resObs" class="note"></div>
+                </div>
+            </div>
+
+            <!-- Bloco 2: Busca por Bairro e Links -->
+            <div class="container">
+                <h2>Localizar QRG por Área</h2>
+                <h4>Pesquisar pelo nome do bairro:</h4>
+                <div class="search-box">
+                    <div class="search-input-wrapper">
+                        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                        <input type="text" id="bairroInput" class="search-input" placeholder="Ex: Itaquera">
+                    </div>
+                    <button class="btn btn-success" onclick="buscarPorBairro()">Localizar</button>
+                </div>
+
+                <!-- Resultados Bairro -->
+                <div id="resultBoxBairro" class="result">
+                    <h3 id="bairroTitle"></h3>
+                    <div id="resQRGFound" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;"></div>
+                </div>
+
+                <!-- Links Externos -->
+                <div style="margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+                    <h4 style="margin-bottom: 0.5rem; color: var(--text-primary);">Acessos Rápidos</h4>
+                    <div class="links-container">
+                        <a href="https://earth.google.com/web/search/S%c3%a3o+Paulo,+SP/@-23.55622711,-46.83258478,928.35690057a,203276.89455997d,34.46327353y,-5.4132532h,25.5366914t,0r/data=CiwiJgokCRxkIbND_jbAEbyS-qVqBDjAGRJkLbo-uUbAIeEDmN7m20fAQgIIATIpCicKJQohMXg4N3h1dVJLeEIzcEU5UmtsZkdGWWk2MjAzSl9rdTJvIAE6AwoBMEICCABKCAjXp_miBhAB?authuser=0" target="_blank" class="btn-outline">
+                            📍 Sites GCM (Google Earth)
+                        </a>
+                        <a href="https://drive.google.com/file/d/1N5issEXq2VXQec_1ggtFixZ4Z_jDc-j6/view" target="_blank" class="btn-outline" style="border-color: var(--warning); color: var(--warning);">
+                            ⚡ N° Instalação Elétrica dos Sites
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <script>
+        // Lógica de Dark Mode
+        const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+        const currentTheme = localStorage.getItem('theme');
+
+        if (currentTheme) {
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            if (currentTheme === 'dark') toggleSwitch.checked = true;
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            toggleSwitch.checked = true;
+        }
+
+        function switchTheme(e) {
+            if (e.target.checked) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+            }
+        }
+        toggleSwitch.addEventListener('change', switchTheme, false);
+
+        // Banco de Dados
+        const database = {
+            "01": { reg: "SUL", site: "INTERLAGOS", bairros: ["Campo Belo", "Santo Amaro", "Campo Grande", "Socorro", "Cidade Dutra", "Vila Andrade", "Americanópolis", "Cidade Ademar", "Jardim Ângela"] },
+            "02": { reg: "CENTRO", site: "PAULISTA", bairros: ["Consolação", "Jardim Paulista", "Bela Vista", "Liberdade", "Cambuci", "Sé", "República", "Santa Cecília", "Moema"] },
+            "04": { reg: "LESTE", site: "ARTUR ALVIM", bairros: ["Penha", "Vila Matilde", "Artur Alvim", "Ponte Rasa", "Cangaíba", "Itaquera", "Cidade Líder", "Vila Jacuí"] },
+            "05": { reg: "NORTE/OESTE", site: "PICO DO JARAGUA", bairros: ["Anhanguera", "Perus", "Jaraguá", "São Domingos", "Pirituba", "Brasilândia", "Freguesia do Ó", "Cachoeirinha", "Limão", "Casa Verde", "Jaguaré", "Vila Leopoldina", "Lapa", "Barra Funda", "Perdizes", "Jardim Paulista", "Itaim Bibi", "Morumbi", "Butantã", "Vila Sonia", "Rio Pequeno", "Raposo Tavares"] },
+            "06": { reg: "NORTE/OESTE", site: "PAULISTA", bairros: ["Jardim Paulista", "Perdizes", "Barra Funda", "Pinheiros", "Vila Mariana"] },
+            "07": { reg: "LESTE", site: "VILA RICA", bairros: ["Aricanduva", "Carrão", "Vila Formosa", "Vila Prudente", "São Lucas", "Sapopemba", "Parque do Carmo", "Cidade Líder"], obs: "⚠️ Obs: Vtr na QRG 07, PTT recebido na QRG 19" },
+            "08": { reg: "SUL", site: "JD. SÃO LUIZ", bairros: ["Jd. São Luiz", "Campo Limpo", "Capão Redondo", "M Boi Mirim", "Jardim Ângela", "Socorro"] },
+            "10": { reg: "NORTE/OESTE", site: "HORTO", bairros: ["Tremembé", "Jaçanã", "Mandaqui", "Tucuruvi", "Santana", "Vila Maria", "Vila Guilherme", "Vila Medeiros"] },
+            "13": { reg: "LESTE", site: "ITAIM PAULISTA", bairros: ["Itaim Paulista", "Vila Curuça", "Jardim Helena", "São Miguel", "Vila Jacuí", "Lageado", "Guaianases", "José Bonifácio", "Ermelino Matarazzo"] },
+            "14": { reg: "LESTE", site: "FURNAS", bairros: ["São Mateus", "São Rafael", "Iguatemi", "Parque do Carmo", "Cidade Tiradentes", "José Bonifácio"] },
+            "15": { reg: "SUL", site: "BARRAGEM", bairros: ["Parelheiros", "Grajaú"] },
+            "16": { reg: "CENTRO", site: "COPOM (NOVA LUZ)", bairros: ["Bom Retiro", "Pari", "Brás", "Belém", "Moóca", "Tatuapé", "Água Rasa"] },
+            "21": { reg: "SUL", site: "JABAQUARA", bairros: ["Jabaquara", "Cidade Ademar", "Pedreira", "Saúde", "Cursino", "Ipiranga", "Sacomã", "Vila das Mercês", "Americanópolis", "Campo Belo"] }
+        };
+
+        // Popular Sidebar
+        function popularTabela() {
+            const tbody = document.getElementById('tableBody');
+            const regioes = {};
+            
+            Object.keys(database).forEach(qrg => {
+                const r = database[qrg].reg;
+                if (!regioes[r]) regioes[r] = [];
+                regioes[r].push({ id: qrg, site: database[qrg].site });
+            });
+
+            Object.keys(regioes).forEach(regiao => {
+                const headerRow = document.createElement('tr');
+                headerRow.className = 'region-header';
+                headerRow.innerHTML = `<td colspan="2">${regiao}</td>`;
+                tbody.appendChild(headerRow);
+                
+                regioes[regiao].forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td><span style="font-weight: 600; color: var(--text-primary);">${item.id}</span></td><td style="color: var(--text-secondary);">${item.site}</td>`;
+                    tbody.appendChild(tr);
+                });
+            });
+        }
+
+        // Lógicas de Busca sem Alert()
+        function resetResultBox(boxElement) {
+            boxElement.className = 'result'; // Reseta as classes
+            boxElement.style.display = 'block';
+        }
+
+        function buscarPorQRG() {
+            let input = document.getElementById('qrgInput').value.trim();
+            if (input.length === 1) input = "0" + input;
+            
+            const resultBox = document.getElementById('resultBoxQRG');
+            const resSite = document.getElementById('resSite');
+            const resBairrosWrapper = document.getElementById('resBairrosWrapper');
+            const resBairros = document.getElementById('resBairros');
+            const resObs = document.getElementById('resObs');
+            
+            resetResultBox(resultBox);
+
+            if (database[input]) {
+                const data = database[input];
+                resultBox.classList.add('result-success');
+                resSite.innerHTML = `📡 QRG ${input} - ${data.site}`;
+                resBairros.innerHTML = data.bairros.map(b => `<li>${b}</li>`).join('');
+                resBairrosWrapper.style.display = 'block';
+                resObs.innerText = data.obs || "";
+                resObs.style.display = data.obs ? 'block' : 'none';
+            } else {
+                resultBox.classList.add('result-error');
+                resSite.innerHTML = "❌ Canal não encontrado.";
+                resBairrosWrapper.style.display = 'none';
+                resObs.style.display = 'none';
+            }
+        }
+
+        function buscarPorBairro() {
+            const input = document.getElementById('bairroInput').value.trim().toLowerCase();
+            const resultBox = document.getElementById('resultBoxBairro');
+            const bairroTitle = document.getElementById('bairroTitle');
+            const resDiv = document.getElementById('resQRGFound');
+            
+            if (input === "") return;
+            
+            let achados = [];
+            for (const qrg in database) {
+                const bairros = database[qrg].bairros;
+                if (bairros.some(b => b.toLowerCase().includes(input))) {
+                    achados.push({ id: qrg, site: database[qrg].site });
+                }
+            }
+            
+            resetResultBox(resultBox);
+
+            if (achados.length > 0) {
+                resultBox.classList.add('result-info');
+                bairroTitle.innerHTML = "Resultados Encontrados:";
+                resDiv.innerHTML = achados.map(item =>
+                    `<div style="display: flex; align-items: center; color: var(--text-primary); font-size: 0.95rem;">
+                        <span class="qrg-badge">${item.id}</span>
+                        <span>Site: <strong>${item.site}</strong></span>
+                    </div>`
+                ).join('');
+            } else {
+                resultBox.classList.add('result-error');
+                bairroTitle.innerHTML = "❌ Bairro não localizado na base.";
+                resDiv.innerHTML = "<p style='color: var(--text-secondary); font-size: 0.9rem;'>Verifique a ortografia ou tente outro bairro próximo.</p>";
+            }
+        }
+
+        // Eventos
+        document.getElementById('qrgInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') buscarPorQRG(); });
+        document.getElementById('bairroInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') buscarPorBairro(); });
+        window.onload = popularTabela;
+    </script>
+</body>
+</html>
